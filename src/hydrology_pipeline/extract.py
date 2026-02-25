@@ -1,24 +1,11 @@
-from __future__ import annotations
-
-def fetch_station_by_notation(notation: str, timeout: int = 30) -> Dict[str, Any]:
-from typing import Any, Dict, List
 import logging
+from typing import Any, Dict, List
 from .api_client import get_json
 from .config import BASE_URL
 
 logger = logging.getLogger(__name__)
 
 def fetch_station_by_notation(notation: str, timeout: int = 30) -> Dict[str, Any]:
-    """
-    Fetch station metadata by station notation.
-    Args:
-        notation (str): Station notation (e.g., E64999A).
-        timeout (int): Timeout for the API request.
-    Returns:
-        Dict[str, Any]: Station metadata.
-    Raises:
-        ValueError: If no station is found.
-    """
     url = f"{BASE_URL}/id/stations/{notation}.json"
     logger.info(f"Fetching station metadata for notation={notation}")
     data = get_json(url, timeout=timeout)
@@ -29,23 +16,11 @@ def fetch_station_by_notation(notation: str, timeout: int = 30) -> Dict[str, Any
     logger.debug(f"Station metadata fetched for notation={notation}")
     return items[0]
 
-
 def _measure_id_from_uri(uri: str) -> str:
     """Extracts the measure ID from a measure URI."""
     return uri.split("/measures/")[-1]
 
-
 def resolve_measures_from_station(station_item: Dict[str, Any], requested_params: List[str]) -> Dict[str, str]:
-    """
-    Resolve measure IDs for the requested parameters from the station metadata.
-    Args:
-        station_item (Dict[str, Any]): Station metadata.
-        requested_params (List[str]): List of parameter names (must be exactly two: conductivity, dissolved-oxygen).
-    Returns:
-        Dict[str, str]: Mapping from parameter name to measure ID.
-    Raises:
-        ValueError: If parameters are invalid or not found.
-    """
     allowed = {"conductivity", "dissolved-oxygen"}
     normalized = [p.lower() for p in requested_params]
 
@@ -80,7 +55,6 @@ def resolve_measures_from_station(station_item: Dict[str, Any], requested_params
         logger.error("Could not resolve a dissolved-oxygen measure from station measures")
         raise ValueError("Could not resolve a dissolved-oxygen measure from station measures")
 
-    # Prefer dissolved-oxygen in mg/L
     do_mgl = [x for x in do_candidates if "mgl" in x.lower()]
     do_measure = do_mgl[0] if do_mgl else do_candidates[0]
 
@@ -90,27 +64,31 @@ def resolve_measures_from_station(station_item: Dict[str, Any], requested_params
         "dissolved-oxygen": do_measure,
     }
 
-def fetch_latest_readings_for_measure(measure_id: str, limit: int = 10, timeout: int = 30) -> List[Dict[str, Any]]:
+def fetch_latest_readings_for_measure(
+    measure_id: str,
+    limit: int = 10,
+    timeout: int = 30,
+) -> List[Dict[str, Any]]:
     """
-    Fetch the latest readings for a given measure.
-    Args:
-        measure_id (str): The measure ID.
-        limit (int): Number of readings to fetch.
-        timeout (int): Timeout for the API request.
-    Returns:
-        List[Dict[str, Any]]: List of reading records.
-    Raises:
-        ValueError: If no readings are found.
+    Fetch the most recent readings for a measure.
+
+    The Hydrology API returns readings in chronological order (earliest -> latest).
+    To reliably obtain the most recent N readings, we fetch a small window and then
+    take the last N in Python.
     """
     url = f"{BASE_URL}/id/measures/{measure_id}/readings.json"
-    params = {"latest": "", "_limit": limit}
-    logger.info(f"Fetching latest {limit} readings for measure_id={measure_id}")
+
+    # Fetch a small window larger than needed, then take the tail.
+    window = max(limit * 5, 50)  # small + safe; still tiny vs API limits
+    params = {"_limit": window}
+
+    logger.info(f"Fetching last {limit} readings for measure_id={measure_id} (window={window})")
     data = get_json(url, params=params, timeout=timeout)
-    readings = data.get("items", [])
+    readings = data.get("items", []) or []
+
     if not readings:
         logger.warning(f"No readings found for measure_id={measure_id}")
-    return readings
-    items = data.get("items", [])
-    if not isinstance(items, list):
-        raise ValueError(f"Unexpected readings payload for measure_id={measure_id}")
-    return items
+        return []
+
+    # API is earliest->latest, so the most recent are at the end
+    return readings[-limit:]

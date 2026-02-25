@@ -1,10 +1,6 @@
-from __future__ import annotations
-
+import logging
 import argparse
 from pathlib import Path
-
-def parse_args() -> argparse.Namespace:
-import logging
 from src.hydrology_pipeline.config import PipelineConfig
 from src.hydrology_pipeline.pipeline import run
 
@@ -21,11 +17,7 @@ def parse_args() -> argparse.Namespace:
     )
     return p.parse_args()
 
-
 def main() -> None:
-    """
-    CLI entry point for the hydrology ETL pipeline.
-    """
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     args = parse_args()
     cfg = PipelineConfig(
@@ -39,7 +31,6 @@ def main() -> None:
     except Exception as exc:
         logging.error(f"Pipeline execution failed: {exc}")
         raise
-
 
 if __name__ == "__main__":
     main()

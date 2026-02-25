@@ -1,12 +1,19 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
 .venv/
-data/
-hydrology.db
-.venv/
-__pycache__/
-*.pyc
-data/*.db
-.DS_Store
+env/
+venv/
+
+# Test cache
 .pytest_cache/
+
+# OS files
+.DS_Store
+
+# Database / generated data
+data/*.db
