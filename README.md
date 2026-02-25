@@ -39,22 +39,33 @@ The `measurements` table uses `(measure_id, date_time)` as a composite primary k
 
 ---
 
+hydrology-pipeline/
 ## Project Structure
 
+```
 hydrology-pipeline/
-├─ src/
-│ ├─ main.py
-│ └─ hydrology_pipeline/
-│ ├─ api_client.py
-│ ├─ config.py
-│ ├─ db.py
-│ ├─ extract.py
-│ ├─ transform.py
-│ └─ pipeline.py
-├─ tests/
-├─ requirements.txt
-├─ pytest.ini
-└─ README.md
+├── data/                        # Output SQLite database and data files
+├── src/
+│   ├── main.py                  # CLI entrypoint for the ETL pipeline
+│   └── hydrology_pipeline/
+│       ├── __init__.py
+│       ├── api_client.py        # API requests and error handling
+│       ├── config.py            # Pipeline configuration and constants
+│       ├── db.py                # Database schema and operations
+│       ├── extract.py           # Data extraction logic
+│       ├── pipeline.py          # ETL orchestration
+│       ├── transform.py         # Data normalization and validation
+│       └── __pycache__/
+├── tests/
+│   ├── __init__.py
+│   ├── test_db.py               # Tests for database logic
+│   ├── test_extract.py          # Tests for extraction logic
+│   ├── test_transform.py        # Tests for transformation logic
+│   └── __pycache__/
+├── requirements.txt             # Python dependencies
+├── pytest.ini                   # Pytest configuration
+├── README.md                    # Project documentation
+```
 
 ## Setup
 

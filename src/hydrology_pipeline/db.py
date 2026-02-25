@@ -5,7 +5,7 @@ from typing import Iterable
 
 from .transform import MeasurementRow, StationRow
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def connect(db_path: Path) -> sqlite3.Connection:
@@ -18,7 +18,7 @@ def connect(db_path: Path) -> sqlite3.Connection:
         conn.execute("PRAGMA foreign_keys = ON;")
         logger.info(f"Connected to SQLite DB at {db_path}")
         return conn
-    except Exception as exc:
+    except Exception as exc:  # type: Exception
         logger.error(f"Failed to connect to DB at {db_path}: {exc}")
         raise
 
@@ -59,7 +59,7 @@ def init_db(conn: sqlite3.Connection) -> None:
         with conn:
             conn.executescript(schema)
         logger.info("Database schema initialized.")
-    except Exception as exc:
+    except Exception as exc:  # type: Exception
         logger.error(f"Failed to initialize database schema: {exc}")
         raise
 
@@ -93,7 +93,7 @@ def upsert_station(conn: sqlite3.Connection, station: StationRow) -> None:
                 ),
             )
         logger.info(f"Upserted station: {station.station_id}")
-    except Exception as exc:
+    except Exception as exc:  # type: Exception
         logger.error(f"Failed to upsert station {station.station_id}: {exc}")
         raise
 
@@ -115,23 +115,24 @@ def insert_measurements(conn: sqlite3.Connection, rows: Iterable[MeasurementRow]
     inserted = 0
     try:
         with conn:
-            cur = conn.cursor()
+            cur: sqlite3.Cursor = conn.cursor()
             for r in rows:
+                r_row: MeasurementRow = r
                 cur.execute(
                     sql,
                     (
-                        r.station_id,
-                        r.observed_property,
-                        r.measure_id,
-                        r.date_time,
-                        r.value,
-                        r.quality,
-                        r.completeness,
+                        r_row.station_id,
+                        r_row.observed_property,
+                        r_row.measure_id,
+                        r_row.date_time,
+                        r_row.value,
+                        r_row.quality,
+                        r_row.completeness,
                     ),
                 )
                 inserted += cur.rowcount  # 1 if inserted, 0 if skipped
         logger.info(f"Inserted {inserted} new measurements.")
         return inserted
-    except Exception as exc:
+    except Exception as exc:  # type: Exception
         logger.error(f"Failed to insert measurements batch: {exc}")
         raise

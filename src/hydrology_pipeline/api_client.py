@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Optional
 import requests
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 class HydrologyApiError(RuntimeError):
     """Raised when the Hydrology API request fails or returns invalid JSON."""
@@ -15,10 +15,10 @@ def get_json(
 ) -> Dict[str, Any]:
     logger.debug(f"Requesting URL: {url} with params: {params} and timeout: {timeout}")
     try:
-        response = requests.get(url, params=params, timeout=timeout)
+        response: requests.Response = requests.get(url, params=params, timeout=timeout)
         response.raise_for_status()
         logger.info(f"Successful GET request: {url}")
-    except requests.RequestException as exc:
+    except requests.RequestException as exc:  # type: requests.RequestException
         logger.error(f"HTTP request failed: url={url} params={params} error={exc}")
         raise HydrologyApiError(f"HTTP request failed: url={url} params={params} error={exc}") from exc
 
@@ -26,6 +26,6 @@ def get_json(
         json_data = response.json()
         logger.debug(f"Received JSON response from {url}")
         return json_data
-    except ValueError as exc:
+    except ValueError as exc:  # type: ValueError
         logger.error(f"Invalid JSON response: url={url} params={params}")
         raise HydrologyApiError(f"Invalid JSON response: url={url} params={params}") from exc

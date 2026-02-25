@@ -8,11 +8,11 @@ from .extract import (
 )
 from .transform import normalize_station, normalize_reading
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def run(config):
+def run(config) -> None:
     """Main ETL pipeline"""
 
     conn = connect(config.db_path)

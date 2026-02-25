@@ -27,7 +27,7 @@ class MeasurementRow:
 
 
 def normalize_station(item: Dict[str, Any]) -> StationRow:
-    station_id = item.get("notation") or item.get("stationGuid") or item.get("@id")
+    station_id: Any | None = item.get("notation") or item.get("stationGuid") or item.get("@id")
     if not station_id:
         raise ValueError("Station payload missing an identifier (notation/stationGuid/@id)")
 
@@ -43,7 +43,7 @@ def normalize_station(item: Dict[str, Any]) -> StationRow:
 
 def _to_iso(dt_str: str) -> str:
     # Validate and normalize ISO timestamps; keep timezone if present
-    cleaned = dt_str.replace("Z", "+00:00")
+    cleaned: str = dt_str.replace("Z", "+00:00")
     try:
         datetime.fromisoformat(cleaned)
         return cleaned
@@ -58,11 +58,11 @@ def normalize_reading(
     observed_property: str,
     measure_id: str,
 ) -> MeasurementRow:
-    dt = reading.get("dateTime") or reading.get("date")
+    dt: Any | None = reading.get("dateTime") or reading.get("date")
     if not dt:
         raise ValueError(f"Reading missing dateTime/date for measure_id={measure_id}")
 
-    raw_val = reading.get("value", None)
+    raw_val: Any | None = reading.get("value", None)
     value: Optional[float] = None
     if raw_val is not None:
         try:
