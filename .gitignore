@@ -9,11 +9,12 @@ __pycache__/
 env/
 venv/
 
-# Test cache
+# Pytest cache
 .pytest_cache/
 
 # OS files
 .DS_Store
 
-# Database / generated data
-data/*.db
+# Generated data / databases
+data/
+*.db
