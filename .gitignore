@@ -1,3 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+data/
+hydrology.db
 .venv/
 __pycache__/
 *.pyc
