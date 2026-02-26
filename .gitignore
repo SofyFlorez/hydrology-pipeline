@@ -18,3 +18,4 @@ venv/
 # Generated data / databases
 data/
 *.db.vscode/
+.vscode/
