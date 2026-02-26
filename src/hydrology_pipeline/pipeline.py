@@ -13,8 +13,16 @@ logging.basicConfig(level=logging.INFO)
 
 
 def run(config) -> None:
-    """Main ETL pipeline"""
+    """
+    Execute the end-to-end ETL pipeline.
 
+    Steps:
+    1. Connect to SQLite and initialize schema
+    2. Fetch station metadata
+    3. Resolve measure IDs for requested parameters
+    4. Retrieve latest readings from API
+    5. Normalize and insert into database (idempotent)
+    """
     conn = connect(config.db_path)
     init_db(conn)
 

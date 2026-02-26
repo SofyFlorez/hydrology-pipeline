@@ -45,7 +45,6 @@ def init_db(conn: sqlite3.Connection) -> None:
         date_time         TEXT NOT NULL,
         value             REAL,
         quality           TEXT,
-        completeness      TEXT,
         ingested_at       TEXT DEFAULT (datetime('now')),
         PRIMARY KEY (measure_id, date_time),
         FOREIGN KEY (station_id) REFERENCES stations(station_id)
@@ -100,15 +99,17 @@ def upsert_station(conn: sqlite3.Connection, station: StationRow) -> None:
 
 def insert_measurements(conn: sqlite3.Connection, rows: Iterable[MeasurementRow]) -> int:
     """
-    Insert measurement records into the database, skipping duplicates based on
-    PRIMARY KEY (measure_id, date_time).
+    Insert measurement rows into the database.
+
+    Duplicates are ignored via the composite primary key
+    (measure_id, date_time), ensuring idempotent pipeline runs.
     """
     sql = """
     INSERT INTO measurements(
         station_id, observed_property, measure_id, date_time,
-        value, quality, completeness
+        value, quality
     )
-    VALUES(?,?,?,?,?,?,?)
+    VALUES(?,?,?,?,?,?)
     ON CONFLICT(measure_id, date_time) DO NOTHING;
     """
 
@@ -127,7 +128,6 @@ def insert_measurements(conn: sqlite3.Connection, rows: Iterable[MeasurementRow]
                         r_row.date_time,
                         r_row.value,
                         r_row.quality,
-                        r_row.completeness,
                     ),
                 )
                 inserted += cur.rowcount  # 1 if inserted, 0 if skipped

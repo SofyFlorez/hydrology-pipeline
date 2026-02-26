@@ -1,7 +1,6 @@
 # Hydrology ETL Pipeline
 
-This project implements a simple ETL data engineering pipeline that retrieves hydrological measurements from the Environment Agency Hydrological Data Explorer API, transforms the data, and stores it in a file-based SQLite database.
-
+This project implements a modular ETL pipeline that retrieves hydrological time-series data from the Environment Agency Hydrology API and stores it in a local SQLite database using a star-schema design.
 The goal of this project is to demonstrate clean, modular, and testable data engineering practices.
 
 ---
@@ -32,40 +31,41 @@ The project follows a simple star-style schema:
 - `stations` → dimension table (station metadata)  
 - `measurements` → fact table (time-series readings)  
 
-The SQLite database file is created locally: `data/hydrology.db`
+The SQLite database file is created locally at `data/hydrology.db`.
 
+The `measurements` table uses `(measure_id, date_time)` as a composite primary key to prevent duplicate inserts and guarantee idempotent pipeline execution.
 
-The `measurements` table uses `(measure_id, date_time)` as a composite primary key to prevent duplicate inserts and ensure idempotency.
+---
+## Assumptions
+
+- The `latest` parameter is used to retrieve the most recent readings.
+- The schema reflects the fields returned by the selected measures.
+- The pipeline can be safely re-run without creating duplicates.
 
 ---
 
 hydrology-pipeline/
 ## Project Structure
 
-```
 hydrology-pipeline/
-├── data/                        # Output SQLite database and data files
+├── data/                        # Output SQLite database
 ├── src/
-│   ├── main.py                  # CLI entrypoint for the ETL pipeline
+│   ├── main.py                  # CLI entrypoint
 │   └── hydrology_pipeline/
 │       ├── __init__.py
-│       ├── api_client.py        # API requests and error handling
-│       ├── config.py            # Pipeline configuration and constants
-│       ├── db.py                # Database schema and operations
-│       ├── extract.py           # Data extraction logic
+│       ├── api_client.py        # API requests
+│       ├── config.py            # Configuration
+│       ├── db.py                # SQLite schema & inserts
+│       ├── extract.py           # API extraction logic
 │       ├── pipeline.py          # ETL orchestration
-│       ├── transform.py         # Data normalization and validation
-│       └── __pycache__/
+│       └── transform.py         # Normalization layer
 ├── tests/
-│   ├── __init__.py
-│   ├── test_db.py               # Tests for database logic
-│   ├── test_extract.py          # Tests for extraction logic
-│   ├── test_transform.py        # Tests for transformation logic
-│   └── __pycache__/
-├── requirements.txt             # Python dependencies
-├── pytest.ini                   # Pytest configuration
-├── README.md                    # Project documentation
-```
+│   ├── test_db.py
+│   ├── test_extract.py
+│   └── test_transform.py
+├── requirements.txt
+├── pytest.ini
+└── README.md
 
 ## Setup
 
@@ -108,13 +108,17 @@ Run unit tests:
 - Extraction validation logic
 - Transformation logic and edge cases
 
-## Data Notes
+## Data Handling Notes
 
-Data Notes
+- The schema reflects the actual fields returned by the selected API measures.
+- Optional fields described in the API documentation (e.g., completeness) were not included as they were not present in the selected payload.
+- Timestamps are stored in ISO 8601 string format as returned by the API.
+- Ingestion time is recorded via `ingested_at` for traceability.
 
-- `quality` and `completeness` are stored exactly as provided by the API.
-- Some readings do not include `completeness`; in those cases it is stored as `NULL`.
-- Duplicate readings are prevented using the composite primary key (`measure_id`, `date_time`).
+## Idempotency
+
+The measurements table uses a composite primary key (measure_id, date_time).  
+This guarantees that rerunning the pipeline will not insert duplicate records.
 
 ## Design Decisions
 

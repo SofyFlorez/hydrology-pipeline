@@ -13,6 +13,11 @@ def get_json(
     params: Optional[Dict[str, Any]] = None,
     timeout: int = 30,
 ) -> Dict[str, Any]:
+    """
+    Perform an HTTP GET request and return the parsed JSON response.
+
+    Raises HydrologyApiError if the request fails or the response is not valid JSON.
+    """
     logger.debug(f"Requesting URL: {url} with params: {params} and timeout: {timeout}")
     try:
         response: requests.Response = requests.get(url, params=params, timeout=timeout)
