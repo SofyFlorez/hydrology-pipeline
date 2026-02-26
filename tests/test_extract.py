@@ -23,8 +23,8 @@ def test_resolve_measures_missing_measures():
     with pytest.raises(ValueError):
         resolve_measures_from_station(station, ["conductivity", "dissolved-oxygen"])
 
-def test_fetch_latest_readings_uses_latest_param_and_limit():
-    """Ensure API call includes latest flag and respects limit."""
+def test_fetch_latest_readings_uses_sort_and_limit():
+    """Ensure API call uses _sort and respects _limit."""
     fake = {"items": [{"dateTime": "2026-02-26T12:01:12", "value": 1.0, "quality": "Unchecked"}]}
 
     with patch("src.hydrology_pipeline.extract.get_json", return_value=fake) as mock_get:

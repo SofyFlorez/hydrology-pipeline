@@ -9,7 +9,6 @@ from .extract import (
 from .transform import normalize_station, normalize_reading
 
 logger: logging.Logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def run(config) -> None:
@@ -26,7 +25,17 @@ def run(config) -> None:
     conn = connect(config.db_path)
     init_db(conn)
 
-    station_item = fetch_station_by_notation(config.station_notation)
+    station_item = fetch_station_by_notation(
+        config.station_notation,
+        timeout=config.timeout_seconds,
+    )
+    if config.required_station_label:
+        label = station_item.get("label")
+        if label != config.required_station_label:
+            raise ValueError(
+                "Station label mismatch. Expected "
+                f"{config.required_station_label}, got {label}."
+            )
     station = normalize_station(station_item)
     upsert_station(conn, station)
 
@@ -38,6 +47,7 @@ def run(config) -> None:
         readings = fetch_latest_readings_for_measure(
             measure_id=measure_id,
             limit=config.limit,
+            timeout=config.timeout_seconds,
         )
 
         rows = [

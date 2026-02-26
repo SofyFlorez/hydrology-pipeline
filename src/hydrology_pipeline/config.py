@@ -5,8 +5,11 @@ from typing import List, Optional
 # Base endpoint for the Environment Agency Hydrology API
 BASE_URL = "https://environment.data.gov.uk/hydrology"
 
-# Default station identifier (Hydrology API notation)
+# Required station identifier (Hydrology API notation)
 DEFAULT_STATION_NOTATION = "E64999A"
+
+# Required station label from the task prompt
+REQUIRED_STATION_LABEL = "HIPPER_PARK ROAD BRIDGE_E_202312"
 
 # Default parameters for data extraction 
 DEFAULT_PARAMS = ["conductivity", "dissolved-oxygen"]
@@ -26,6 +29,7 @@ class PipelineConfig:
     """
 
     station_notation: str = DEFAULT_STATION_NOTATION
+    required_station_label: Optional[str] = REQUIRED_STATION_LABEL
     params: Optional[List[str]] = None
     limit: int = DEFAULT_LIMIT
     db_path: Path = Path("data") / "hydrology.db"

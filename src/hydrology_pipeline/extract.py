@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List
 from .api_client import get_json
-from .config import BASE_URL
 from .config import BASE_URL, ALLOWED_PARAMETERS
 
 logger: logging.Logger = logging.getLogger(__name__)

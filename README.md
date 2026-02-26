@@ -39,7 +39,7 @@ The `measurements` table uses `(measure_id, date_time)` as a composite primary k
 
 ## Assumptions
 
-- The `latest` parameter is used to retrieve the most recent readings.
+- The API request uses `_sort=-dateTime` and `_limit` to retrieve the most recent readings.
 - The schema reflects the fields returned by the selected measures.
 - The pipeline can be safely re-run without creating duplicates.
 
@@ -63,7 +63,7 @@ hydrology-pipeline/
 ├── tests/
 │   ├── test_db.py               # Test for database operations
 │   ├── test_extract.py          # Tests for extraction logic
-│   └── test_transform.py.       # Test for transformation and validation
+│   └── test_transform.py        # Test for transformation and validation
 ├── requirements.txt             # Project dependencies
 ├── pytest.ini                   # Pytest configuration
 └── README.md
@@ -83,7 +83,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### macOs / Linux
+### macOS / Linux
 
 ```bash
 python3 -m venv .venv
@@ -118,6 +118,10 @@ This will:
 | `--params` | Two parameters to download | `conductivity dissolved-oxygen` |
 | `--limit` | Number of recent readings per parameter | `10` |
 | `--db` | Path to SQLite database file | `data/hydrology.db` |
+
+The pipeline validates that the station label matches:
+
+`HIPPER_PARK ROAD BRIDGE_E_202312`
 
 ---
 
