@@ -1,6 +1,6 @@
 # Hydrology ETL Pipeline
 
-This project implements a modular ETL pipeline that retrieves hydrological time-series data from the Environment Agency Hydrology API and stores it in a local SQLite database using a star-schema design.
+This project implements a modular ETL pipeline that retrieves hydrological time-series data from the Environment Agency Hydrology API and stores it in a local SQLite database using a star-schema design.  
 The goal of this project is to demonstrate clean, modular, and testable data engineering practices.
 
 ---
@@ -36,6 +36,7 @@ The SQLite database file is created locally at `data/hydrology.db`.
 The `measurements` table uses `(measure_id, date_time)` as a composite primary key to prevent duplicate inserts and guarantee idempotent pipeline execution.
 
 ---
+
 ## Assumptions
 
 - The `latest` parameter is used to retrieve the most recent readings.
@@ -44,13 +45,13 @@ The `measurements` table uses `(measure_id, date_time)` as a composite primary k
 
 ---
 
-hydrology-pipeline/
 ## Project Structure
 
+```
 hydrology-pipeline/
 ├── data/                        # Output SQLite database
 ├── src/
-│   ├── main.py                  # CLI entrypoint
+│   ├── main.py                  # CLI entrypoint for running the pipeline
 │   └── hydrology_pipeline/
 │       ├── __init__.py
 │       ├── api_client.py        # API requests
@@ -58,14 +59,17 @@ hydrology-pipeline/
 │       ├── db.py                # SQLite schema & inserts
 │       ├── extract.py           # API extraction logic
 │       ├── pipeline.py          # ETL orchestration
-│       └── transform.py         # Normalization layer
+│       └── transform.py         # Data validation and normalization
 ├── tests/
-│   ├── test_db.py
-│   ├── test_extract.py
-│   └── test_transform.py
-├── requirements.txt
-├── pytest.ini
+│   ├── test_db.py               # Test for database operations
+│   ├── test_extract.py          # Tests for extraction logic
+│   └── test_transform.py.       # Test for transformation and validation
+├── requirements.txt             # Project dependencies
+├── pytest.ini                   # Pytest configuration
 └── README.md
+```
+
+---
 
 ## Setup
 
@@ -73,40 +77,64 @@ Create and activate a virtual environment:
 
 ### Windows
 
+```bash
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+```
+
+### macOs / Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+---
 
 ## Run the Pipeline
 
-`python -m src.main --station E64999A --params conductivity dissolved-oxygen --limit 10`
+Basic usage:
 
-This command will:
+```bash
+python -m src.main --station E64999A --params conductivity dissolved-oxygen --limit 10
+```
 
-- Call the API
-- Transform the retrieved data
-- Insert the results into data/hydrology.db
+This will:
+
+- Connect to the Hydrology API  
+- Retrieve the latest measurements  
+- Transform and validate the data  
+- Store results in a local SQLite database (`data/hydrology.db`)  
+
+---
 
 ## CLI Options
 
-`--station` – Station notation (default: `E64999A`)
+| Option | Description | Default |
+|--------|-------------|--------|
+| `--station` | Station notation | `E64999A` |
+| `--params` | Two parameters to download | `conductivity dissolved-oxygen` |
+| `--limit` | Number of recent readings per parameter | `10` |
+| `--db` | Path to SQLite database file | `data/hydrology.db` |
 
-`--params` – Exactly two parameters (default: `conductivity dissolved-oxygen`)
-
-`--limit` – Number of most recent readings per parameter (default: `10`)
-
-`--db` – Path to SQLite database (default: `data/hydrology.db`)
+---
 
 ## Testing
 
 Run unit tests:
 
-`pytest`
+```bash
+pytest
+```
 
-- The test suite covers:
+The test suite covers:
 - Database schema and inserts
 - Extraction validation logic
 - Transformation logic and edge cases
+
+---
 
 ## Data Handling Notes
 
@@ -115,10 +143,14 @@ Run unit tests:
 - Timestamps are stored in ISO 8601 string format as returned by the API.
 - Ingestion time is recorded via `ingested_at` for traceability.
 
+---
+
 ## Idempotency
 
-The measurements table uses a composite primary key (measure_id, date_time).  
+The measurements table uses a composite primary key `(measure_id, date_time)`.  
 This guarantees that rerunning the pipeline will not insert duplicate records.
+
+---
 
 ## Design Decisions
 
@@ -127,6 +159,8 @@ This guarantees that rerunning the pipeline will not insert duplicate records.
 - Idempotent database writes
 - Minimal dependencies (requests and pytest)
 - Cross-platform compatibility (Windows, macOS, Linux)
+
+---
 
 ## API Reference
 
